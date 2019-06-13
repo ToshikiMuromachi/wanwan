@@ -54,8 +54,6 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
 
         algo = PitchEstimationAlgorithm.YIN;
 
-        //JPanel pitchDetectionPanel = new experiment.PitchDetectionPanel(algoChangeListener);
-
         JPanel inputPanel = new InputPanel();
 
         inputPanel.addPropertyChangeListener("mixer",
@@ -76,18 +74,12 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
 
         JPanel containerPanel = new JPanel(new GridLayout(1,0));
         containerPanel.add(inputPanel);
-        //containerPanel.add(pitchDetectionPanel);
         this.add(containerPanel,BorderLayout.NORTH);
 
         JPanel otherContainer = new JPanel(new BorderLayout());
         otherContainer.add(panel,BorderLayout.CENTER);
-        //otherContainer.setBorder(new TitledBorder("3. Utter a sound (whistling works best)"));
 
         this.add(otherContainer,BorderLayout.CENTER);
-
-//        ImageIcon icon = new ImageIcon("/home/toshiki/IdeaProjects/TarsosDSPTest/1.png");
-//        JLabel l = new JLabel(icon);
-//        this.add(l);
 
         //マイク決め打ち
         for(Mixer.Info info : Shared.getMixerInfo(false, true)) {
@@ -96,7 +88,6 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
                 System.out.println(info);
                 System.out.println(AudioSystem.getMixer(info));
                 Mixer newValue = AudioSystem.getMixer(info);
-                //experiment.InputPanel.this.firePropertyChange("mixer", mixer, newValue);
                 Mixer mixer = newValue;
                 try {
                     setNewMixer(mixer);

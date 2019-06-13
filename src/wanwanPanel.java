@@ -59,10 +59,6 @@ public class wanwanPanel extends JPanel {
         }
         graphics.drawLine(x, 0, x, 180);
 
-//        if(lastReset != 0){
-//            graphics.drawString("Score: " + String.valueOf(score), getWidth()/2, 20);
-//        }
-
 
         //ノード描画
         graphics.setColor(Color.WHITE);
@@ -94,7 +90,6 @@ public class wanwanPanel extends JPanel {
             graphics.fillRoundRect(patternX, patternY, 10,10,10 ,10);
         }
 
-        //System.out.println("ふぉおおおおおおおおおおおおおおおおおおおおい！"+pitches.get());
         //無音区間プロット
         if(getSilentSection() == true) {
             //silentSectionTImes.add(startTimeStamps);

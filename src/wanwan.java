@@ -201,7 +201,8 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
             setNoTalkingStartTime(audioEvent.getTimeStamp());
         }
         //ユーザー発話がない場合の処理
-        if (userTalkingFlag == false && (timeStamp - getNoTalkingStartTime()) > 4.0 && (timeStamp - getRecentNoTalkingTime()) > 2.0) {
+        //if (userTalkingFlag == false && (timeStamp - getNoTalkingStartTime()) > 6.0 && (timeStamp - getRecentNoTalkingTime()) > 2.0) {
+        if (userTalkingFlag == false && (timeStamp - getRecentNoTalkingTime()) > 4.0) {
             panel.setSilentSection(true);
             setRecentNoTalkingTime(timeStamp);
             System.out.println("[Silent Section]");

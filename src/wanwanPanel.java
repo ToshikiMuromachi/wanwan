@@ -52,28 +52,15 @@ public class wanwanPanel extends JPanel {
         //System.out.println("x:" + x +"current-last:" + (System.currentTimeMillis() - lastReset));
         if(x < 20 && System.currentTimeMillis() - lastReset > 1000){
             lastReset = System.currentTimeMillis();
-            score();
+            //score();
             pitches.clear();
             startTimeStamps.clear();
             silentSectionTImes.clear();
         }
-        graphics.drawLine(x, 0, x, 180);
+        graphics.drawLine(x, 0, x, getHeight());
 
 
         //ノード描画
-        graphics.setColor(Color.WHITE);
-        double lengthPerQuarterNote = patternLength/patternLengthInQuarterNotes; // in seconds per quarter note
-        double currentXPosition = 0.5; // seconds of pause before start
-        for(int i = 0 ; i < pattern.length ; i++){
-            double lengthInSeconds = timing[i] * lengthPerQuarterNote;//seconds
-            int patternWidth = (int) ( lengthInSeconds / (double) patternLength * getWidth());//pixels
-            int patternHeight = (int) (CENTS_DEVIATION / 1200.0 * getHeight());
-            int patternX = (int) ( (currentXPosition) / (double) patternLength * getWidth());
-            int patternY = 180 - (int) (pattern[i] / 1200.0 * 180) - patternHeight/2 ;
-            //int patternY = getHeight() - (int) (pattern[i] / 1200.0 * getHeight()) - patternHeight/2 ;
-            graphics.fillRoundRect(patternX, patternY, patternWidth, patternHeight, 10, 10);
-            currentXPosition += lengthInSeconds; //in seconds
-        }
 
         //ピッチプロット
         //graphics.setColor(Color.RED);
@@ -81,22 +68,30 @@ public class wanwanPanel extends JPanel {
             double pitchInCents = pitches.get(i);
             double startTimeStamp = startTimeStamps.get(i) % patternLength;
             int patternX = (int) ( startTimeStamp / (double) patternLength * getWidth());
-            int patternY = 180 - (int) (pitchInCents / 1200.0 * 180);
+            //int patternY = 180 - (int) (pitchInCents / 1200.0 * 180);
             //int patternY = getHeight() - (int) (pitchInCents / 1200.0 * getHeight());
+            int patternY = getHeight() - (int) (pitchInCents / 1500.0 * getHeight());
             graphics.setColor(Color.RED);
             if (i == (pitches.size() -1)) {
                 graphics.setColor(Color.YELLOW);
             }
             graphics.fillRoundRect(patternX, patternY, 10,10,10 ,10);
-        }
 
+            //無音区間追加
+            if(i == (pitches.size()-1)) {
+                if(getSilentSection() == true) {
+                    double sts = startTimeStamp;
+                    silentSectionTImes.add(sts);
+                    setSilentSection(false);
+                }
+            }
+        }
         //無音区間プロット
-        if(getSilentSection() == true) {
-            //silentSectionTImes.add(startTimeStamps);
-        }
         graphics.setColor(Color.BLUE);
-        for(int i = 0 ; i < silentSectionTImes.size() ; i++){
-
+        for(int i = 0 ; i < silentSectionTImes.size() ; i++) {
+            double startTimeStamp = silentSectionTImes.get(i) % patternLength;
+            int silentX = (int) ( startTimeStamp / (double) patternLength * getWidth());
+            graphics.fillRect(silentX, 50, 20,getHeight()-100);
         }
         //if (getSilentSection() == true) {
 //            graphics.setColor(Color.BLUE);
@@ -109,29 +104,29 @@ public class wanwanPanel extends JPanel {
         //五線を書く
         graphics.setColor(Color.WHITE);
         for (int i = 0; i < 12; i++) {
-            g.drawLine(0, 20 + i*15, 1980, 20 + i*15);
+            g.drawLine(0, 100 + i*70, 1980, 100 + i*70);
         }
 
     }
 
-    private void score(){
-        score = 0;
-        for(int i = 0 ; i < pitches.size() ; i++){
-            double pitchInCents = pitches.get(i);
-            double startTimeStamp = startTimeStamps.get(i) % patternLength;
-            if(startTimeStamp > 0.5 && startTimeStamp <= 0.5 + 0.5 * pattern.length){
-                double lengthPerQuarterNote = patternLength/patternLengthInQuarterNotes; // in seconds per quarter note
-                double currentXPosition = 0.5; // seconds of pause before start
-                for(int j = 0 ; j < pattern.length ; j++){
-                    double lengthInSeconds = timing[j] * lengthPerQuarterNote;//seconds
-                    if(startTimeStamp > currentXPosition && startTimeStamp <= currentXPosition + lengthInSeconds && Math.abs(pitchInCents-pattern[j]) < CENTS_DEVIATION){
-                        score++;
-                    }
-                    currentXPosition += lengthInSeconds; //in seconds
-                }
-            }
-        }
-    }
+//    private void score(){
+//        score = 0;
+//        for(int i = 0 ; i < pitches.size() ; i++){
+//            double pitchInCents = pitches.get(i);
+//            double startTimeStamp = startTimeStamps.get(i) % patternLength;
+//            if(startTimeStamp > 0.5 && startTimeStamp <= 0.5 + 0.5 * pattern.length){
+//                double lengthPerQuarterNote = patternLength/patternLengthInQuarterNotes; // in seconds per quarter note
+//                double currentXPosition = 0.5; // seconds of pause before start
+//                for(int j = 0 ; j < pattern.length ; j++){
+//                    double lengthInSeconds = timing[j] * lengthPerQuarterNote;//seconds
+//                    if(startTimeStamp > currentXPosition && startTimeStamp <= currentXPosition + lengthInSeconds && Math.abs(pitchInCents-pattern[j]) < CENTS_DEVIATION){
+//                        score++;
+//                    }
+//                    currentXPosition += lengthInSeconds; //in seconds
+//                }
+//            }
+//        }
+//    }
 
     /**
      * 周波数を図にプロットする。無音区間推定を行う。

@@ -25,7 +25,8 @@ public class wanwanPanel extends JPanel {
     ArrayList<Double> pitches;
 
     private boolean silentSection = false;
-    ArrayList<Double> silentSectionTImes;
+    ArrayList<Double> silentSectionTimes;
+    ArrayList<Double> silentSectionPitches;
 
     public wanwanPanel(){
         for(double timeInQuarterNotes : timing){
@@ -35,7 +36,8 @@ public class wanwanPanel extends JPanel {
         currentMarker = 0;
         startTimeStamps = new ArrayList<Double>();
         pitches = new ArrayList<Double>();
-        silentSectionTImes = new ArrayList<Double>();
+        silentSectionTimes = new ArrayList<Double>();
+        silentSectionPitches = new ArrayList<Double>();
     }
 
     @Override
@@ -55,7 +57,7 @@ public class wanwanPanel extends JPanel {
             //score();
             pitches.clear();
             startTimeStamps.clear();
-            silentSectionTImes.clear();
+            silentSectionTimes.clear();
         }
         graphics.drawLine(x, 0, x, getHeight());
 
@@ -68,8 +70,6 @@ public class wanwanPanel extends JPanel {
             double pitchInCents = pitches.get(i);
             double startTimeStamp = startTimeStamps.get(i) % patternLength;
             int patternX = (int) ( startTimeStamp / (double) patternLength * getWidth());
-            //int patternY = 180 - (int) (pitchInCents / 1200.0 * 180);
-            //int patternY = getHeight() - (int) (pitchInCents / 1200.0 * getHeight());
             int patternY = getHeight() - (int) (pitchInCents / 1500.0 * getHeight());
             graphics.setColor(Color.RED);
             if (i == (pitches.size() -1)) {
@@ -80,20 +80,25 @@ public class wanwanPanel extends JPanel {
             //無音区間追加
             if(i == (pitches.size()-1)) {
                 if(getSilentSection() == true) {
-                    double sts = startTimeStamp;
-                    silentSectionTImes.add(sts);
+                    silentSectionTimes.add(startTimeStamp);
+                    silentSectionPitches.add(pitches.get(i));
                     setSilentSection(false);
                 }
             }
         }
         //無音区間プロット
-        graphics.setColor(Color.BLUE);
-        for(int i = 0 ; i < silentSectionTImes.size() ; i++) {
-            double startTimeStamp = silentSectionTImes.get(i) % patternLength;
+        for(int i = 0 ; i < silentSectionTimes.size() ; i++) {
+            double startTimeStamp = silentSectionTimes.get(i) % patternLength;
             int silentX = (int) ( startTimeStamp / (double) patternLength * getWidth());
+            graphics.setColor(Color.BLUE);
             graphics.fillRect(silentX, 50, 20,getHeight()-100);
-        }
 
+            //無音区間ピッチプロット
+            graphics.setColor(Color.ORANGE);
+            double pitchInCents = silentSectionPitches.get(i);
+            int silentY = getHeight() - (int) (pitchInCents / 1500.0 * getHeight());
+            graphics.fillRoundRect(silentX, silentY, 20,20,20 ,20);
+        }
         //五線を書く
         graphics.setColor(Color.WHITE);
         for (int i = 0; i < 12; i++) {
@@ -122,7 +127,7 @@ public class wanwanPanel extends JPanel {
 //    }
 
     /**
-     * 周波数を図にプロットする。無音区間推定を行う。
+     * 周波数を図にプロットする。
      * @param timeStamp
      * @param frequency
      */

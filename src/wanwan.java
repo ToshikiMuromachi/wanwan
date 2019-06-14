@@ -25,7 +25,6 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
     private PitchEstimationAlgorithm algo;
     private double silentStartTime = 0;
     private int silentTime = 0;
-    private double recentSilentSectionTime = 0;
 
 
     private ActionListener algoChangeListener = new ActionListener(){
@@ -205,17 +204,10 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         }
 
         //ユーザー発話がない場合の処理
-        // (ユーザー発話が10ターン以上無いかを調べる&ユーザー発話フラグが立っていない&現在時間から最新の無音区間推定時間を引いてそれが4s以上か調べる)
+        // (ユーザー発話が10ターン以上無いかを調べる&ユーザー発話フラグが立っていないか)
         if (getSilentTime() > 20 && panel.getSilentSection() == false) {
-        //if (getSilentStartFlag() == true && panel.getSilentSection() == false && (timeStamp - getNoTalkingStartTime()) > 4.0 && (timeStamp - getRecentNoTalkingTime()) > 4.0) {
-        //if (getSilentStartFlag() == true && panel.getSilentSection() == false && (timeStamp - getRecentNoTalkingTime()) > 4.0) {
             panel.setSilentSection(true); //無音区間フラグを立てる
-            setRecentSilentSectionTime(timeStamp);
-            //System.out.println("[Silent Section]");
         }
-        //System.out.println(timeStamp - getSilentStartTime());
-        //System.out.println(getSilentTime());
-        //System.out.println(getNoTalkingStartTime());
     }
 
     public static Clip createClip(File path) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
@@ -247,9 +239,6 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
     public void setSilentTime(int silentTime) {
         this.silentTime = silentTime;
     }
-
-    public  double getRecentSilentSectionTime() { return this.recentSilentSectionTime; }
-    public void setRecentSilentSectionTime(double recentSilentSectionTime) { this.recentSilentSectionTime = recentSilentSectionTime; }
 
 
 }

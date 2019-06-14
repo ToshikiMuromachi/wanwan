@@ -93,13 +93,6 @@ public class wanwanPanel extends JPanel {
             int silentX = (int) ( startTimeStamp / (double) patternLength * getWidth());
             graphics.fillRect(silentX, 50, 20,getHeight()-100);
         }
-        //if (getSilentSection() == true) {
-//            graphics.setColor(Color.BLUE);
-//            double startTimeStamp = startTimeStamps.get(pitches.size()-1) % patternLength;
-//            int patternX = (int) ( startTimeStamp % patternLength / (double) patternLength * getWidth());
-//            graphics.drawRect(patternX, 10, 20,170);
-//            setSilentSection(false);
-        //}
 
         //五線を書く
         graphics.setColor(Color.WHITE);
@@ -142,15 +135,10 @@ public class wanwanPanel extends JPanel {
             startTimeStamps.add(timeStamp);
         }
 
-        //無音区間推定
 
         this.repaint();
     }
 
-    public boolean getSilentSection() {
-        return this.silentSection;
-    }
-    public void setSilentSection(boolean silentSection) {
-        this.silentSection = silentSection;
-    }
+    public boolean getSilentSection() { return this.silentSection; }
+    public void setSilentSection(boolean silentSection) { this.silentSection = silentSection; }
 }

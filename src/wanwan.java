@@ -23,9 +23,9 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
     private AudioDispatcher dispatcher;
     private Mixer currentMixer;
     private PitchEstimationAlgorithm algo;
-    private boolean userTalkingFlag = true;
-    private double noTalkingStartTime = 0;
-    private double recentNoTalkingTime = 0;
+    private double silentStartTime = 0;
+    private int silentTime = 0;
+    private double recentSilentSectionTime = 0;
 
 
     private ActionListener algoChangeListener = new ActionListener(){
@@ -191,23 +191,31 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         double timeStamp = audioEvent.getTimeStamp();
         float pitch = pitchDetectionResult.getPitch();
         String message = String.format("Pitch detected at %.2fs: %.2fHz\n", timeStamp,pitch);
-        System.out.print(message);
+        //System.out.print(message);
         panel.setMarker(timeStamp, pitch);
 
+
         //ピッチ
-        //if(timeStamp > 10 && pitchDetectionResult.getPitch() != -1 && userTalkingFlag == true){
-        if(timeStamp > 5.0 && pitchDetectionResult.getPitch() == -1.0 && getUserTalkingFlag() == true){
-            setUserTalkingFlag(false);
-            setNoTalkingStartTime(audioEvent.getTimeStamp());
+        //現在無音であるか判別 開始5秒以上経っている&ピッチの結果が取得できていない&無音区間開始フラグが立っている
+        if(timeStamp > 5.0 && pitchDetectionResult.getPitch() == -1.0) {
+            setSilentStartTime(audioEvent.getTimeStamp()); //無音区間開始時間を記録する
+            setSilentTime(getSilentTime()+1); //無音区間経過時間を記録
+        }else{
+            setSilentTime(0);
         }
+
         //ユーザー発話がない場合の処理
-        //if (userTalkingFlag == false && (timeStamp - getNoTalkingStartTime()) > 6.0 && (timeStamp - getRecentNoTalkingTime()) > 2.0) {
-        if (userTalkingFlag == false && (timeStamp - getRecentNoTalkingTime()) > 4.0) {
-            panel.setSilentSection(true);
-            setRecentNoTalkingTime(timeStamp);
-            System.out.println("[Silent Section]");
+        // (ユーザー発話が10ターン以上無いかを調べる&ユーザー発話フラグが立っていない&現在時間から最新の無音区間推定時間を引いてそれが4s以上か調べる)
+        if (getSilentTime() > 20 && panel.getSilentSection() == false) {
+        //if (getSilentStartFlag() == true && panel.getSilentSection() == false && (timeStamp - getNoTalkingStartTime()) > 4.0 && (timeStamp - getRecentNoTalkingTime()) > 4.0) {
+        //if (getSilentStartFlag() == true && panel.getSilentSection() == false && (timeStamp - getRecentNoTalkingTime()) > 4.0) {
+            panel.setSilentSection(true); //無音区間フラグを立てる
+            setRecentSilentSectionTime(timeStamp);
+            //System.out.println("[Silent Section]");
         }
-        //System.out.println(userTalkingFlag);
+        //System.out.println(timeStamp - getSilentStartTime());
+        //System.out.println(getSilentTime());
+        //System.out.println(getNoTalkingStartTime());
     }
 
     public static Clip createClip(File path) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
@@ -230,20 +238,18 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
     }
 
 
-    public boolean getUserTalkingFlag() {
-        return this.userTalkingFlag;
-    }
-    public void setUserTalkingFlag(boolean userTalkingFlag) {
-        this.userTalkingFlag = userTalkingFlag;
+    public  double getSilentStartTime() { return this.silentStartTime; }
+    public void setSilentStartTime(double silentStartTime) {
+        this.silentStartTime = silentStartTime;
     }
 
-    public  double getNoTalkingStartTime() { return this.noTalkingStartTime; }
-    public void setNoTalkingStartTime(double noTalkingStartTime) {
-        this.noTalkingStartTime = noTalkingStartTime;
+    public  int getSilentTime() { return this.silentTime; }
+    public void setSilentTime(int silentTime) {
+        this.silentTime = silentTime;
     }
 
-    public  double getRecentNoTalkingTime() { return this.recentNoTalkingTime; }
-    public void setRecentNoTalkingTime(double recentNoTalkingTime) { this.recentNoTalkingTime = recentNoTalkingTime; }
+    public  double getRecentSilentSectionTime() { return this.recentSilentSectionTime; }
+    public void setRecentSilentSectionTime(double recentSilentSectionTime) { this.recentSilentSectionTime = recentSilentSectionTime; }
 
 
 }

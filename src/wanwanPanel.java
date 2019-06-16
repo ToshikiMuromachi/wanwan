@@ -12,7 +12,6 @@ public class wanwanPanel extends JPanel {
     private static final long serialVersionUID = -5330666476785715988L;
     private double patternLength;//in seconds
     private double currentMarker;
-    private long lastReset;
     private int score;
     private double patternLengthInQuarterNotes;
 
@@ -27,6 +26,10 @@ public class wanwanPanel extends JPanel {
     private boolean silentSection = false;
     ArrayList<Double> silentSectionTimes;
     ArrayList<Double> silentSectionPitches;
+    private boolean resetFlag = false;
+    private long resetTime = 0;
+    private int recentResetRepeat = 0;
+    private int currentResetRepeat = 0;
 
     public wanwanPanel(){
         for(double timeInQuarterNotes : timing){
@@ -51,13 +54,19 @@ public class wanwanPanel extends JPanel {
         int x = (int) (currentMarker / (float) patternLength * getWidth());
 
         //現在バー描画
-        //System.out.println("x:" + x +"current-last:" + (System.currentTimeMillis() - lastReset));
-        if(x < 20 && System.currentTimeMillis() - lastReset > 1000){
-            lastReset = System.currentTimeMillis();
+        //描画更新ができない不具合解決のためフラグで管理 現在の繰り返す数と前回までに繰り返した数を比較し、違っていたら描画更新
+        setResetTime(getResetTime() + 1);
+        if(getCurrentResetRepeat() != getRecentResetRepeat()) {
+            setResetFlag(true);
+        }
+
+        if(getResetFlag() == true) {
+            setRecentResetRepeat(getCurrentResetRepeat());
             //score();
             pitches.clear();
             startTimeStamps.clear();
             silentSectionTimes.clear();
+            setResetFlag(false);
         }
         graphics.drawLine(x, 0, x, getHeight());
 
@@ -83,7 +92,6 @@ public class wanwanPanel extends JPanel {
                     silentSectionTimes.add(startTimeStamp);
                     silentSectionPitches.add(pitches.get(i));
                     setSilentSection(false);
-                    //System.out.println(silentSectionTimes.size());
                 }
             }
         }
@@ -99,9 +107,8 @@ public class wanwanPanel extends JPanel {
             double pitchInCents = silentSectionPitches.get(i);
             int silentY = getHeight() - (int) (pitchInCents / 1500.0 * getHeight());
             graphics.fillRoundRect(silentX, silentY, 20,20,20 ,20);
-            //System.out.print(i + ":" + silentY + " , ");
+            System.out.println(silentSectionTimes.size());
         }
-        //System.out.println(" ");
         //五線を書く
         graphics.setColor(Color.WHITE);
         for (int i = 0; i < 12; i++) {
@@ -136,6 +143,7 @@ public class wanwanPanel extends JPanel {
      */
     public void setMarker(double timeStamp,double frequency) {
         currentMarker = timeStamp % patternLength;
+        setCurrentResetRepeat((int)(timeStamp / patternLength));
         //ignore everything outside 80-2000Hz
         if (frequency > 80 && frequency < 2000) {
             double pitchInCents = PitchConverter.hertzToRelativeCent(frequency);
@@ -149,4 +157,16 @@ public class wanwanPanel extends JPanel {
 
     public boolean getSilentSection() { return this.silentSection; }
     public void setSilentSection(boolean silentSection) { this.silentSection = silentSection; }
+
+    public boolean getResetFlag() { return this.resetFlag; }
+    public void setResetFlag(boolean resetFlag) { this.resetFlag = resetFlag; }
+
+    public long getResetTime() { return this.resetTime; }
+    public void setResetTime(long resetTime) { this.resetTime = resetTime; }
+
+    public int getRecentResetRepeat() { return this.recentResetRepeat; }
+    public void setRecentResetRepeat(int recentResetRepeat) { this.recentResetRepeat = recentResetRepeat; }
+
+    public int getCurrentResetRepeat() { return this.currentResetRepeat; }
+    public void setCurrentResetRepeat(int currentResetRepeat) { this.currentResetRepeat = currentResetRepeat; }
 }

@@ -46,7 +46,7 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         this.setLayout(new BorderLayout());
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Pitch Detector");
-        this.setBounds(200, 200, 1920, 1080);
+        this.setBounds(400, 100, 1920, 1080);
 
         panel = new wanwanPanel();
 
@@ -208,7 +208,7 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         if (getSilentTime() > 20 && panel.getSilentSection() == false) {
             panel.setSilentSection(true); //無音区間フラグを立てる
             setSilentTime(0);
-            System.out.println("silentsection"+timeStamp + " : " +getSilentTime());
+            //System.out.println("silentsection"+timeStamp + " : " +getSilentTime());
         }
     }
 

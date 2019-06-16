@@ -23,7 +23,7 @@ public class wanwanPanel extends JPanel {
     ArrayList<Double> startTimeStamps;
     ArrayList<Double> pitches;
 
-    private boolean silentSection = false;
+    private int silentSection = 0;
     ArrayList<Double> silentSectionTimes;
     ArrayList<Double> silentSectionPitches;
     private boolean resetFlag = false;
@@ -88,10 +88,10 @@ public class wanwanPanel extends JPanel {
 
             //無音区間追加
             if(i == (pitches.size()-1)) {
-                if(getSilentSection() == true) {
+                if(getSilentSection() == 1) {
                     silentSectionTimes.add(startTimeStamp);
                     silentSectionPitches.add(pitches.get(i));
-                    setSilentSection(false);
+                    setSilentSection(2);//無音区間継続フラグに変更
                 }
             }
         }
@@ -107,7 +107,7 @@ public class wanwanPanel extends JPanel {
             double pitchInCents = silentSectionPitches.get(i);
             int silentY = getHeight() - (int) (pitchInCents / 1500.0 * getHeight());
             graphics.fillRoundRect(silentX, silentY, 20,20,20 ,20);
-            System.out.println(silentSectionTimes.size());
+            //System.out.println(silentSectionTimes.size());
         }
         //五線を書く
         graphics.setColor(Color.WHITE);
@@ -155,8 +155,8 @@ public class wanwanPanel extends JPanel {
         this.repaint();
     }
 
-    public boolean getSilentSection() { return this.silentSection; }
-    public void setSilentSection(boolean silentSection) { this.silentSection = silentSection; }
+    public int getSilentSection() { return this.silentSection; }
+    public void setSilentSection(int silentSection) { this.silentSection = silentSection; }
 
     public boolean getResetFlag() { return this.resetFlag; }
     public void setResetFlag(boolean resetFlag) { this.resetFlag = resetFlag; }

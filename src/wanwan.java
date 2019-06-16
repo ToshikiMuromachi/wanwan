@@ -25,7 +25,7 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
     private PitchEstimationAlgorithm algo;
     private double silentStartTime = 0;
     private int silentTime = 0;
-
+    private double silentRecentTimeStamp = 0;
 
     private ActionListener algoChangeListener = new ActionListener(){
         @Override
@@ -115,8 +115,6 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         int bufferSize = 1536;
         int overlap = 0;
 
-        //textArea.append("Started listening with " + experiment.Shared.toLocalString(mixer.getMixerInfo().getName()) + "\n\tparams: " + threshold + "dB\n");
-
         final AudioFormat format = new AudioFormat(sampleRate, 16, 1, true,
                 false);
         final DataLine.Info dataLineInfo = new DataLine.Info(
@@ -201,15 +199,20 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
             setSilentTime(getSilentTime()+1); //無音区間経過時間を記録
         }else{
             setSilentTime(0);
+            panel.setSilentSection(0);
         }
 
         //ユーザー発話がない場合の処理
-        // (ユーザー発話が10ターン以上無いかを調べる&ユーザー発話フラグが立っていないか)
-        if (getSilentTime() > 20 && panel.getSilentSection() == false) {
-            panel.setSilentSection(true); //無音区間フラグを立てる
-            setSilentTime(0);
-            //System.out.println("silentsection"+timeStamp + " : " +getSilentTime());
+        // (ユーザー発話が10ターン以上無いかを調べる&ユーザー発話フラグが立っていないか&無音区間のタイムスタンプを見て前回のタイムスタンプに近ければリジェクト)
+        //同じ発話区間ということをわからせない限り、前回のタイムスタンプからの結果でしか判断ができない。
+        //setSilentSectionをbooleanからintの3値のフラグに変更。0:無音区間でない　1:無音区間(プロット必要) 2:無音区間(継続)
+        if (getSilentTime() > 20 && panel.getSilentSection() == 0 && (timeStamp - getSilentRecentTimeStamp()) > 3) {
+            panel.setSilentSection(1); //無音区間フラグを立てる
+            //setSilentTime(0);
+            setSilentRecentTimeStamp(timeStamp);
+            System.out.println("silentsection"+" : " +getSilentRecentTimeStamp());
         }
+        //System.out.println(panel.getSilentSection());
     }
 
     public static Clip createClip(File path) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
@@ -242,5 +245,7 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         this.silentTime = silentTime;
     }
 
+    public  double getSilentRecentTimeStamp() { return this.silentRecentTimeStamp; }
+    public void setSilentRecentTimeStamp(double SilentRecentTimeStamp) { this.silentRecentTimeStamp = SilentRecentTimeStamp; }
 
 }

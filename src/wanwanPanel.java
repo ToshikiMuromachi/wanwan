@@ -83,6 +83,7 @@ public class wanwanPanel extends JPanel {
                     silentSectionTimes.add(startTimeStamp);
                     silentSectionPitches.add(pitches.get(i));
                     setSilentSection(false);
+                    //System.out.println(silentSectionTimes.size());
                 }
             }
         }
@@ -98,7 +99,9 @@ public class wanwanPanel extends JPanel {
             double pitchInCents = silentSectionPitches.get(i);
             int silentY = getHeight() - (int) (pitchInCents / 1500.0 * getHeight());
             graphics.fillRoundRect(silentX, silentY, 20,20,20 ,20);
+            //System.out.print(i + ":" + silentY + " , ");
         }
+        //System.out.println(" ");
         //五線を書く
         graphics.setColor(Color.WHITE);
         for (int i = 0; i < 12; i++) {

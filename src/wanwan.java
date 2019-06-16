@@ -207,6 +207,8 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         // (ユーザー発話が10ターン以上無いかを調べる&ユーザー発話フラグが立っていないか)
         if (getSilentTime() > 20 && panel.getSilentSection() == false) {
             panel.setSilentSection(true); //無音区間フラグを立てる
+            setSilentTime(0);
+            System.out.println("silentsection"+timeStamp + " : " +getSilentTime());
         }
     }
 

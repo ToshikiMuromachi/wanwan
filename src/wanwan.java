@@ -16,6 +16,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class wanwan extends JFrame implements PitchDetectionHandler {
 
@@ -23,9 +25,10 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
     private AudioDispatcher dispatcher;
     private Mixer currentMixer;
     private PitchEstimationAlgorithm algo;
-    private double silentStartTime = 0;
-    private int silentTime = 0;
-    private double silentRecentTimeStamp = 0;
+    private double silentStartTime = 0; //無音区間開始時タイムスタンプ
+    private int silentTime = 0; //無音区間フラグ
+    private double silentRecentTimeStamp = 0;  //現時点に最も近い無音区間タイムスタンプ
+    HashMap<Double, Double> pitchesAll = new HashMap<>(); //ピッチ全格納リスト 時間,ピッチ
 
     private ActionListener algoChangeListener = new ActionListener(){
         @Override
@@ -55,8 +58,7 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
 
         JPanel inputPanel = new InputPanel();
 
-        inputPanel.addPropertyChangeListener("mixer",
-                new PropertyChangeListener() {
+        inputPanel.addPropertyChangeListener("mixer", new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent arg0) {
                         try {
@@ -84,7 +86,6 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         for(Mixer.Info info : Shared.getMixerInfo(false, true)) {
             System.out.println("Mixer.Info:" + info + ":");
             if (info.toString().matches("default.*")) {
-                System.out.println("こんんいははあああ");
                 System.out.println(info);
                 System.out.println(AudioSystem.getMixer(info));
                 Mixer newValue = AudioSystem.getMixer(info);
@@ -144,8 +145,7 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
      */
     private static final long serialVersionUID = 4787721035066991486L;
 
-    public static void main(String... strings) throws InterruptedException,
-            InvocationTargetException, UnsupportedAudioFileException, IOException, LineUnavailableException {
+    public static void main(String... strings) throws InterruptedException, InvocationTargetException, UnsupportedAudioFileException, IOException, LineUnavailableException {
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override
             public void run() {
@@ -189,7 +189,9 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         double timeStamp = audioEvent.getTimeStamp();
         float pitch = pitchDetectionResult.getPitch();
         String message = String.format("Pitch detected at %.2fs: %.2fHz\n", timeStamp,pitch);
-        //System.out.print(message);
+        pitchesAll.put(timeStamp, (double) pitch);
+        //System.out.print(message);        //ピッチ取得結果
+        //System.out.println(timeStamp+" : "+ pitchesAll.get(timeStamp));     //全ピッチをマップに格納(使ってない)
         panel.setMarker(timeStamp, pitch);
 
 
@@ -204,14 +206,17 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         }
 
         //ユーザー発話がない場合の処理
-        // (ユーザー発話が10ターン以上無いかを調べる&ユーザー発話フラグが立っていないか&無音区間のタイムスタンプを見て前回のタイムスタンプに近ければリジェクト)
+        // (ユーザー発話が10ターン以上無いかを調べる
+        // 　&ユーザー発話フラグが立っていないか
+        // 　&無音区間のタイムスタンプを見て前回のタイムスタンプに近ければリジェクト)
         //同じ発話区間ということをわからせない限り、前回のタイムスタンプからの結果でしか判断ができない。
         //setSilentSectionをbooleanからintの3値のフラグに変更。0:無音区間でない　1:無音区間(プロット必要) 2:無音区間(継続)
         if (getSilentTime() > 15 && panel.getSilentSection() == 0 && (timeStamp - getSilentRecentTimeStamp()) > 3) {
             panel.setSilentSection(1); //無音区間フラグを立てる
             //setSilentTime(0);
             setSilentRecentTimeStamp(timeStamp);
-            System.out.println("silentsection"+" : " +getSilentRecentTimeStamp());
+            //無音区間表示
+            System.out.println("silentsection"+" : " +getSilentRecentTimeStamp()+" : "+panel.getSilentRecentTimePitch()+"Hz");
         }
         //System.out.println(panel.getSilentSection());
     }
@@ -231,6 +236,11 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
 
             //再生準備完了
             c.open(ais);
+
+//
+//            int centValue = Integer.valueOf(((JSpinner) arg0.getSource())
+//                    .getValue().toString());
+//            currentFactor = centToFactor(centValue);
             return c;
         }
     }
@@ -248,5 +258,4 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
 
     public  double getSilentRecentTimeStamp() { return this.silentRecentTimeStamp; }
     public void setSilentRecentTimeStamp(double SilentRecentTimeStamp) { this.silentRecentTimeStamp = SilentRecentTimeStamp; }
-
 }

@@ -14,6 +14,7 @@ public class wanwanPanel extends JPanel {
     private double currentMarker;
     private int score;
     private double patternLengthInQuarterNotes;
+    private double silentRecentTimePitch;   //現時点に最も近い地点のピッチを取得
 
     private static final double CENTS_DEVIATION = 30.0;
 
@@ -100,11 +101,12 @@ public class wanwanPanel extends JPanel {
             double startTimeStamp = silentSectionTimes.get(i) % patternLength;
             int silentX = (int) ( startTimeStamp / (double) patternLength * getWidth());
             graphics.setColor(Color.BLUE);
-            graphics.fillRect(silentX, 50, 20,getHeight()-100);
+            graphics.fillRect(silentX, 50, 20,getHeight()-100); //青い四角
 
-            //無音区間ピッチプロット
+            //無音区間ピッチプロット 前回の発話のピッチに合わせた位置に描画 オレンジの丸
             graphics.setColor(Color.ORANGE);
             double pitchInCents = silentSectionPitches.get(i);
+            setSilentRecentTimePitch(pitchInCents);
             int silentY = getHeight() - (int) (pitchInCents / 1500.0 * getHeight());
             graphics.fillRoundRect(silentX, silentY, 20,20,20 ,20);
             //System.out.println(silentSectionTimes.size());
@@ -169,4 +171,7 @@ public class wanwanPanel extends JPanel {
 
     public int getCurrentResetRepeat() { return this.currentResetRepeat; }
     public void setCurrentResetRepeat(int currentResetRepeat) { this.currentResetRepeat = currentResetRepeat; }
+
+    public double getSilentRecentTimePitch() { return this.silentRecentTimePitch; }
+    public void setSilentRecentTimePitch(double SilentRecentTimePitch) { this.silentRecentTimePitch = SilentRecentTimePitch; }
 }

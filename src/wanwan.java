@@ -83,7 +83,8 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         //マイク決め打ち
         for(Mixer.Info info : Shared.getMixerInfo(false, true)) {
             System.out.println("Mixer.Info:" + info + ":");
-            if (info.toString().equals("default [default], version 4.18.0-21-generic")) {
+            if (info.toString().matches("default.*")) {
+                System.out.println("こんんいははあああ");
                 System.out.println(info);
                 System.out.println(AudioSystem.getMixer(info));
                 Mixer newValue = AudioSystem.getMixer(info);
@@ -206,7 +207,7 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         // (ユーザー発話が10ターン以上無いかを調べる&ユーザー発話フラグが立っていないか&無音区間のタイムスタンプを見て前回のタイムスタンプに近ければリジェクト)
         //同じ発話区間ということをわからせない限り、前回のタイムスタンプからの結果でしか判断ができない。
         //setSilentSectionをbooleanからintの3値のフラグに変更。0:無音区間でない　1:無音区間(プロット必要) 2:無音区間(継続)
-        if (getSilentTime() > 20 && panel.getSilentSection() == 0 && (timeStamp - getSilentRecentTimeStamp()) > 3) {
+        if (getSilentTime() > 15 && panel.getSilentSection() == 0 && (timeStamp - getSilentRecentTimeStamp()) > 3) {
             panel.setSilentSection(1); //無音区間フラグを立てる
             //setSilentTime(0);
             setSilentRecentTimeStamp(timeStamp);

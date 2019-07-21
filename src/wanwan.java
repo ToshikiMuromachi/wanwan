@@ -1,10 +1,13 @@
-import be.tarsos.dsp.AudioDispatcher;
-import be.tarsos.dsp.AudioEvent;
+import be.tarsos.dsp.*;
+import be.tarsos.dsp.io.jvm.AudioDispatcherFactory;
+import be.tarsos.dsp.io.jvm.AudioPlayer;
 import be.tarsos.dsp.io.jvm.JVMAudioInputStream;
+import be.tarsos.dsp.io.jvm.WaveformWriter;
 import be.tarsos.dsp.pitch.PitchDetectionHandler;
 import be.tarsos.dsp.pitch.PitchDetectionResult;
 import be.tarsos.dsp.pitch.PitchProcessor;
 import be.tarsos.dsp.pitch.PitchProcessor.PitchEstimationAlgorithm;
+import be.tarsos.dsp.resample.RateTransposer;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -117,10 +120,8 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         int bufferSize = 1536;
         int overlap = 0;
 
-        final AudioFormat format = new AudioFormat(sampleRate, 16, 1, true,
-                false);
-        final DataLine.Info dataLineInfo = new DataLine.Info(
-                TargetDataLine.class, format);
+        final AudioFormat format = new AudioFormat(sampleRate, 16, 1, true, false);
+        final DataLine.Info dataLineInfo = new DataLine.Info(TargetDataLine.class, format);
         TargetDataLine line;
         line = (TargetDataLine) mixer.getLine(dataLineInfo);
         final int numberOfSamples = bufferSize;
@@ -156,16 +157,11 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
                     frame.setSize(1980,1020);
                     frame.setVisible(true);
 
+                    //startFile("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav",null);
                     Clip clip = null;
-                    clip = createClip(new File("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav"));
+//                    createClip("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav","/home/toshiki/data/a/a.wav",0);
                     //ここで再生メソッドの呼び出し
                     //clip.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedAudioFileException e) {
-                    e.printStackTrace();
-                } catch (LineUnavailableException e) {
-                    e.printStackTrace();
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 } catch (InstantiationException e) {
@@ -221,28 +217,132 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         //System.out.println(panel.getSilentSection());
     }
 
-    public static Clip createClip(File path) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
-        //指定されたURLのオーディオ入力ストリームを取得
-        try (AudioInputStream ais = AudioSystem.getAudioInputStream(path)) {
-
-            //ファイルの形式取得
-            AudioFormat af = ais.getFormat();
-
-            //単一のオーディオ形式を含む指定した情報からデータラインの情報オブジェクトを構築
-            DataLine.Info dataLine = new DataLine.Info(Clip.class, af);
-
-            //指定された Line.Info オブジェクトの記述に一致するラインを取得
-            Clip c = (Clip) AudioSystem.getLine(dataLine);
-
-            //再生準備完了
-            c.open(ais);
-
+    public void startFile(String file,Mixer mixer){
+//        File inputFile = new File(file);
+//        if(dispatcher != null){
+//            dispatcher.stop();
+//        }
+//        AudioFormat format;
+//        try {
+//            if(inputFile != null){
+//                format = AudioSystem.getAudioFileFormat(inputFile).getFormat();
+//            }else{
+//                format = new AudioFormat(44100, 16, 1, true,true);
+//            }
+//            rateTransposer = new RateTransposer(currentFactor);
+//            gain = new GainProcessor(1.0);
+//            audioPlayer = new AudioPlayer(format);
+//            sampleRate = format.getSampleRate();
 //
-//            int centValue = Integer.valueOf(((JSpinner) arg0.getSource())
-//                    .getValue().toString());
-//            currentFactor = centToFactor(centValue);
-            return c;
+//            //can not time travel, unfortunately. It would be nice to go back and kill Hitler or something...
+//            if(originalTempoCheckBox.getModel().isSelected() && inputFile != null){
+//                wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(currentFactor, sampleRate));
+//            } else {
+//                wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(1, sampleRate));
+//            }
+//            if(inputFile == null){
+//                DataLine.Info dataLineInfo = new DataLine.Info(TargetDataLine.class, format);
+//                TargetDataLine line;
+//                line = (TargetDataLine) mixer.getLine(dataLineInfo);
+//                line.open(format, wsola.getInputBufferSize());
+//                line.start();
+//                final AudioInputStream stream = new AudioInputStream(line);
+//                JVMAudioInputStream audioStream = new JVMAudioInputStream(stream);
+//                // create a new dispatcher
+//                dispatcher = new AudioDispatcher(audioStream, wsola.getInputBufferSize(),wsola.getOverlap());
+//            }else{
+//                if(format.getChannels() != 1){
+//                    dispatcher = AudioDispatcherFactory.fromFile(inputFile,wsola.getInputBufferSize() * format.getChannels(),wsola.getOverlap() * format.getChannels());
+//                    dispatcher.addAudioProcessor(new MultichannelToMono(format.getChannels(),true));
+//                }else{
+//                    dispatcher = AudioDispatcherFactory.fromFile(inputFile,wsola.getInputBufferSize(),wsola.getOverlap());
+//                }
+//                //dispatcher = AudioDispatcher.fromFile(inputFile,wsola.getInputBufferSize(),wsola.getOverlap());
+//            }
+//            wsola.setDispatcher(dispatcher);
+//            dispatcher.addAudioProcessor(wsola);
+//            dispatcher.addAudioProcessor(rateTransposer);
+//            dispatcher.addAudioProcessor(gain);
+//            dispatcher.addAudioProcessor(audioPlayer);
+//            dispatcher.addAudioProcessor(new AudioProcessor() {
+//
+//                @Override
+//                public void processingFinished() {
+//                    if(loop){
+//                        dispatcher =null;
+//                        startFile(inputFile,null);
+//                    }
+//
+//                }
+//
+//                @Override
+//                public boolean process(AudioEvent audioEvent) {
+//                    return true;
+//                }
+//            });
+//
+//            Thread t = new Thread(dispatcher);
+//            t.start();
+//        } catch (UnsupportedAudioFileException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        } catch (LineUnavailableException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+    }
+
+    public static void createClip(String source,String target,double cents) throws UnsupportedAudioFileException, IOException {
+        File inputFile = new File(source);
+        AudioFormat format = AudioSystem.getAudioFileFormat(inputFile).getFormat();
+        double sampleRate = format.getSampleRate();
+        double factor = wanwan.centToFactor(cents);
+        RateTransposer rateTransposer = new RateTransposer(factor);
+        WaveformSimilarityBasedOverlapAdd wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(factor, sampleRate));
+        WaveformWriter writer = new WaveformWriter(format,target);
+        AudioDispatcher dispatcher;
+        if(format.getChannels() != 1){
+            dispatcher = AudioDispatcherFactory.fromFile(inputFile,wsola.getInputBufferSize() * format.getChannels(),wsola.getOverlap() * format.getChannels());
+            dispatcher.addAudioProcessor(new MultichannelToMono(format.getChannels(),true));
+        }else{
+            dispatcher = AudioDispatcherFactory.fromFile(inputFile,wsola.getInputBufferSize(),wsola.getOverlap());
         }
+        wsola.setDispatcher(dispatcher);
+        dispatcher.addAudioProcessor(wsola);
+        dispatcher.addAudioProcessor(rateTransposer);
+        dispatcher.addAudioProcessor(writer);
+        dispatcher.run();
+        System.out.println("aaaaaaaaaaaaaaaa");
+
+
+//        //指定されたURLのオーディオ入力ストリームを取得
+//        try (AudioInputStream ais = AudioSystem.getAudioInputStream(path)) {
+//
+//            //ファイルの形式取得
+//            AudioFormat af = ais.getFormat();
+//
+//            //単一のオーディオ形式を含む指定した情報からデータラインの情報オブジェクトを構築
+//            DataLine.Info dataLine = new DataLine.Info(Clip.class, af);
+//
+//            //指定された Line.Info オブジェクトの記述に一致するラインを取得
+//            Clip c = (Clip) AudioSystem.getLine(dataLine);
+//
+//            //再生準備完了
+//            c.open(ais);
+//
+////
+////            int centValue = Integer.valueOf(((JSpinner) arg0.getSource())
+////                    .getValue().toString());
+////            currentFactor = centToFactor(centValue);
+//            return c;
+//        }
+    }
+    //ピッチの高さ変更メソッド
+    public static double centToFactor(double cents){
+        return 1 / Math.pow(Math.E,cents*Math.log(2)/1200/Math.log(Math.E));
     }
 
 

@@ -50,7 +50,7 @@ public class wanwanPanel extends JPanel {
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
                 RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        graphics.setBackground(Color.GRAY);
+        graphics.setBackground(new Color(105,105,105));
         graphics.clearRect(0, 0, getWidth(), getHeight());
         int x = (int) (currentMarker / (float) patternLength * getWidth());
 
@@ -81,11 +81,11 @@ public class wanwanPanel extends JPanel {
             double startTimeStamp = startTimeStamps.get(i) % patternLength;
             int patternX = (int) ( startTimeStamp / (double) patternLength * getWidth());
             int patternY = getHeight() - (int) (pitchInCents / 1500.0 * getHeight());
-            graphics.setColor(Color.RED);
+            graphics.setColor(new Color(255,70,30));
             if (i == (pitches.size() -1)) {
-                graphics.setColor(Color.YELLOW);
+                graphics.setColor(new Color(240,210,20));
             }
-            graphics.fillRoundRect(patternX, patternY, 10,10,10 ,10);
+            graphics.fillRoundRect(patternX, patternY, 15,15,15,15);
 
             //無音区間追加
             if(i == (pitches.size()-1)) {
@@ -100,11 +100,11 @@ public class wanwanPanel extends JPanel {
         for(int i = 0 ; i < silentSectionTimes.size() ; i++) {
             double startTimeStamp = silentSectionTimes.get(i) % patternLength;
             int silentX = (int) ( startTimeStamp / (double) patternLength * getWidth());
-            graphics.setColor(Color.BLUE);
+            graphics.setColor(new Color(100,149,237));
             graphics.fillRect(silentX, 50, 20,getHeight()-100); //青い四角
 
             //無音区間ピッチプロット 前回の発話のピッチに合わせた位置に描画 オレンジの丸
-            graphics.setColor(Color.ORANGE);
+            graphics.setColor(new Color(255,255,153));
             double pitchInCents = silentSectionPitches.get(i);
             setSilentRecentTimePitch(pitchInCents);
             int silentY = getHeight() - (int) (pitchInCents / 1500.0 * getHeight());

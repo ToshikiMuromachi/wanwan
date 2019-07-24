@@ -33,6 +33,15 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
     private double silentRecentTimeStamp = 0;  //現時点に最も近い無音区間タイムスタンプ
     HashMap<Double, Double> pitchesAll = new HashMap<>(); //ピッチ全格納リスト 時間,ピッチ
 
+    //音声再生関係
+    private WaveformSimilarityBasedOverlapAdd wsola;
+    private GainProcessor gain;
+    private AudioPlayer audioPlayer;
+    private RateTransposer rateTransposer;
+    private double currentFactor;// pitch shift factor
+    private double sampleRate;
+    private boolean loop;
+
     private ActionListener algoChangeListener = new ActionListener(){
         @Override
         public void actionPerformed(final ActionEvent e) {
@@ -157,7 +166,12 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
                     frame.setSize(1980,1020);
                     frame.setVisible(true);
 
-                    //startFile("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav",null);
+                    JFrame frameWanwan = new gui();
+                    frameWanwan.setSize(640,480);
+                    frameWanwan.setVisible(true);
+
+                    wanwan sound = new wanwan();
+                    sound.startFile(new File("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav"),null);
                     Clip clip = null;
 //                    createClip("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav","/home/toshiki/data/a/a.wav",0);
                     //ここで再生メソッドの呼び出し
@@ -169,6 +183,12 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
                 } catch (UnsupportedLookAndFeelException e) {
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (LineUnavailableException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedAudioFileException e) {
                     e.printStackTrace();
                 }
             }
@@ -217,8 +237,59 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         //System.out.println(panel.getSilentSection());
     }
 
-    public void startFile(String file,Mixer mixer){
-//        File inputFile = new File(file);
+    public void startFile(File file, Mixer mixer) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
+        File inputFile = new File(String.valueOf(file));
+        if(dispatcher != null){
+            dispatcher.stop();
+        }
+        AudioFormat format = AudioSystem.getAudioFileFormat(inputFile).getFormat();
+        try {
+            rateTransposer = new RateTransposer(4.0); //minFactor=0.1 and maxFactor=4.0
+            gain = new GainProcessor(1.0);
+            audioPlayer = new AudioPlayer(format);
+            sampleRate = format.getSampleRate();
+
+
+            //can not time travel, unfortunately. It would be nice to go back and kill Hitler or something...
+            //最初のテンポで常に再生させる。
+            //if(originalTempoCheckBox.getModel().isSelected() && inputFile != null){
+            wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(currentFactor, sampleRate));
+
+            dispatcher = AudioDispatcherFactory.fromFile(inputFile,wsola.getInputBufferSize(),wsola.getOverlap());
+
+            wsola.setDispatcher(dispatcher);
+            dispatcher.addAudioProcessor(wsola);
+            dispatcher.addAudioProcessor(rateTransposer);
+            dispatcher.addAudioProcessor(gain);
+            dispatcher.addAudioProcessor(audioPlayer);
+            dispatcher.addAudioProcessor(new AudioProcessor() {
+
+                @Override
+                public void processingFinished() {
+                    if(loop){
+                        dispatcher =null;
+                        try {
+                            startFile(inputFile,null);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (UnsupportedAudioFileException e) {
+                            e.printStackTrace();
+                        } catch (LineUnavailableException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+
+                @Override
+                public boolean process(AudioEvent audioEvent) {
+                    return true;
+                }
+            });
+
+            Thread t = new Thread(dispatcher);
+            t.start();
+//        File inputFile = new File(String.valueOf(file));
 //        if(dispatcher != null){
 //            dispatcher.stop();
 //        }
@@ -229,13 +300,16 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
 //            }else{
 //                format = new AudioFormat(44100, 16, 1, true,true);
 //            }
-//            rateTransposer = new RateTransposer(currentFactor);
+//            //rateTransposer = new RateTransposer(currentFactor);
+//            rateTransposer = new RateTransposer(4.0); //minFactor=0.1 and maxFactor=4.0
 //            gain = new GainProcessor(1.0);
 //            audioPlayer = new AudioPlayer(format);
 //            sampleRate = format.getSampleRate();
 //
 //            //can not time travel, unfortunately. It would be nice to go back and kill Hitler or something...
-//            if(originalTempoCheckBox.getModel().isSelected() && inputFile != null){
+//            //最初のテンポで常に再生させる。
+//            //if(originalTempoCheckBox.getModel().isSelected() && inputFile != null){
+//            if(inputFile != null){
 //                wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(currentFactor, sampleRate));
 //            } else {
 //                wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(1, sampleRate));
@@ -283,16 +357,16 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
 //
 //            Thread t = new Thread(dispatcher);
 //            t.start();
-//        } catch (UnsupportedAudioFileException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        } catch (LineUnavailableException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
+        } catch (UnsupportedAudioFileException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (LineUnavailableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public static void createClip(String source,String target,double cents) throws UnsupportedAudioFileException, IOException {
@@ -315,7 +389,6 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         dispatcher.addAudioProcessor(rateTransposer);
         dispatcher.addAudioProcessor(writer);
         dispatcher.run();
-        System.out.println("aaaaaaaaaaaaaaaa");
 
 
 //        //指定されたURLのオーディオ入力ストリームを取得

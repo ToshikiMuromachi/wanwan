@@ -49,6 +49,7 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
     //int[] pitchList = {104,125,146,167,187,229,250,271,292,312};
     int[] pitchList = {100,200,300,400,500,600,700,800,900,1000};
     File wanfile = new File("/home/toshiki/IdeaProjects/wanwan/data/dog.wav");
+    File wanfiles = new File("/home/toshiki/IdeaProjects/wanwan/data/");
 
     private ActionListener algoChangeListener = new ActionListener(){
         @Override
@@ -234,7 +235,7 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
             //無音区間開始時のピッチを記録
             setSilentStartPitch(panel.getSilentRecentTimePitch());
             //発話生成 音声ファイル再生
-            startFile(wanfile, pitchList);
+            startFile(wanfiles, pitchList);
             panel.setSilentSection(1); //無音区間フラグを立てる
             //無音区間表示
             //System.out.println("silentsection"+" : " +getSilentRecentTimeStamp()+" : "+panel.getSilentRecentTimePitch()+"Hz");
@@ -290,10 +291,47 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         //最も近いピッチ探させる
         int playNumber = getNearestValue(pitchList, getSilentStartPitch());
         System.out.println("PITCH:" + String.format("%.2f", getSilentStartPitch()) + "Hz PLAY:" + playNumber +" min:" +pitchList[playNumber] );
-        //File[] filesInput = file.listFiles();
+
+        //最も近いピッチを持つ音声ファイルを流す。
+        File fileInput;
+        switch (playNumber) {
+            case 0:
+                fileInput = new File("/home/toshiki/IdeaProjects/wanwan/data/dog104.wav");
+                break;
+            case 1:
+                fileInput = new File("/home/toshiki/IdeaProjects/wanwan/data/dog125.wav");
+                break;
+            case 2:
+                fileInput = new File("/home/toshiki/IdeaProjects/wanwan/data/dog146.wav");
+                break;
+            case 3:
+                fileInput = new File("/home/toshiki/IdeaProjects/wanwan/data/dog167.wav");
+                break;
+            case 4:
+                fileInput = new File("/home/toshiki/IdeaProjects/wanwan/data/dog187.wav");
+                break;
+            case 5:
+                fileInput = new File("/home/toshiki/IdeaProjects/wanwan/data/dog229.wav");
+                break;
+            case 6:
+                fileInput = new File("/home/toshiki/IdeaProjects/wanwan/data/dog250.wav");
+                break;
+            case 7:
+                fileInput = new File("/home/toshiki/IdeaProjects/wanwan/data/dog271.wav");
+                break;
+            case 8:
+                fileInput = new File("/home/toshiki/IdeaProjects/wanwan/data/dog292.wav");
+                break;
+            case 9:
+                fileInput = new File("/home/toshiki/IdeaProjects/wanwan/data/dog312.wav");
+                break;
+            default:
+                fileInput = new File("/home/toshiki/IdeaProjects/wanwan/data/dog.wav");
+                break;
+        }
 
         //音再生
-        Clip clip = createClip(file);
+        Clip clip = createClip(fileInput);
         clip.start();
 
 

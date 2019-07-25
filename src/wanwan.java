@@ -48,7 +48,7 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
     //エージェント発話ピッチ
     //int[] pitchList = {104,125,146,167,187,229,250,271,292,312};
     int[] pitchList = {100,200,300,400,500,600,700,800,900,1000};
-    File wanfile = new File("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav");
+    File wanfile = new File("/home/toshiki/IdeaProjects/wanwan/data/dog.wav");
 
     private ActionListener algoChangeListener = new ActionListener(){
         @Override
@@ -260,6 +260,27 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         return playNumber;
     }
 
+    /**
+     * サウンドの入力ストリーム取得
+     */
+    public Clip createClip(File file) {
+        try {
+            AudioInputStream stream = AudioSystem.getAudioInputStream(file); //オーディオストリームを開く
+            AudioFormat af = stream.getFormat(); //ファイルの形式取得
+            DataLine.Info dataLine = new DataLine.Info(Clip.class,af); //単一のオーディオ形式を含む指定した情報からデータラインの情報オブジェクトを構築
+            Clip c = (Clip)AudioSystem.getLine(dataLine); //指定された Line.Info オブジェクトの記述に一致するラインを取得
+            c.open(stream); //再生準備完了
+            return c;
+        } catch (LineUnavailableException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (UnsupportedAudioFileException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
 
     /**
      *最も近いピッチで音を再生
@@ -272,22 +293,9 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         //File[] filesInput = file.listFiles();
 
         //音再生
-        try {
-            AudioInputStream stream = AudioSystem.getAudioInputStream(getClass().getResource(String.valueOf(file))); //オーディオストリームを開く
-            AudioFormat af = stream.getFormat(); //ファイルの形式取得
-            DataLine.Info dataLine = new DataLine.Info(Clip.class,af); //単一のオーディオ形式を含む指定した情報からデータラインの情報オブジェクトを構築
-            Clip c = (Clip)AudioSystem.getLine(dataLine); //指定された Line.Info オブジェクトの記述に一致するラインを取得
-            c.open(stream); //再生準備完了
-            c.start();// 再生
-            c.close();
+        Clip clip = createClip(file);
+        clip.start();
 
-        } catch (LineUnavailableException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (UnsupportedAudioFileException e) {
-            e.printStackTrace();
-        }
 
 
     }

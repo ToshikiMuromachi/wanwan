@@ -13,15 +13,13 @@ import be.tarsos.dsp.writer.WriterProcessor;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
+import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,6 +44,11 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
     private double currentFactor;// pitch shift factor
     private double sampleRate;
     private boolean loop;
+
+    //エージェント発話ピッチ
+    //int[] pitchList = {104,125,146,167,187,229,250,271,292,312};
+    int[] pitchList = {100,200,300,400,500,600,700,800,900,1000};
+    File wanfile = new File("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav");
 
     private ActionListener algoChangeListener = new ActionListener(){
         @Override
@@ -175,10 +178,8 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
                     frameWanwan.setSize(640,480);
                     frameWanwan.setVisible(true);
 
-                    int[] pitchList = {104,125,146,167,187,229,250,271,292,312};
                     wanwan sound = new wanwan();
-                    sound.startFile(new File("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav"), pitchList);
-                    Clip clip = null;
+                    //Clip clip = null;
 //                    createClip("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav","/home/toshiki/data/a/a.wav",0);
                     //ここで再生メソッドの呼び出し
                     //clip.start();
@@ -215,7 +216,6 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         //現在無音であるか判別 開始5秒以上経っている&ピッチの結果が取得できていない&無音区間開始フラグが立っている
         if(timeStamp > 5.0 && pitchDetectionResult.getPitch() == -1.0) {
             setSilentStartTime(audioEvent.getTimeStamp()); //無音区間開始時間を記録する
-            setSilentStartPitch(panel.getSilentRecentTimePitch()); //無音区間開始時のピッチを記録しておく。
             setSilentTime(getSilentTime()+1); //無音区間経過時間を記録
         }else{
             setSilentTime(0);
@@ -229,26 +229,65 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         //同じ発話区間ということをわからせない限り、前回のタイムスタンプからの結果でしか判断ができない。
         //setSilentSectionをbooleanからintの3値のフラグに変更。0:無音区間でない　1:無音区間(プロット必要) 2:無音区間(継続)
         if (getSilentTime() > 15 && panel.getSilentSection() == 0 && (timeStamp - getSilentRecentTimeStamp()) > 3) {
-            panel.setSilentSection(1); //無音区間フラグを立てる
             //setSilentTime(0);
             setSilentRecentTimeStamp(timeStamp);
+            //無音区間開始時のピッチを記録
+            setSilentStartPitch(panel.getSilentRecentTimePitch());
+            //発話生成 音声ファイル再生
+            startFile(wanfile, pitchList);
+            panel.setSilentSection(1); //無音区間フラグを立てる
             //無音区間表示
-            System.out.println("silentsection"+" : " +getSilentRecentTimeStamp()+" : "+panel.getSilentRecentTimePitch()+"Hz");
+            //System.out.println("silentsection"+" : " +getSilentRecentTimeStamp()+" : "+panel.getSilentRecentTimePitch()+"Hz");
         }
         //System.out.println(panel.getSilentSection());
     }
 
-    public void getNearestValue(int[] pitchList) {
-        int absolute;
+    /**
+     *最も近いピッチを探す
+     *
+     */
+    public int getNearestValue(int[] pitchList,double silentStartPitch) {
+        int playNumber = 0;
 
+        double min = Math.abs(pitchList[0] - silentStartPitch);
+        for(int i=1; i < pitchList.length; i++) {
+            if (Math.abs(pitchList[i] - silentStartPitch) < min ) {
+                playNumber = i;
+                min = Math.abs(pitchList[i] - silentStartPitch);
+            }
+        }
 
-
+        return playNumber;
     }
 
 
+    /**
+     *最も近いピッチで音を再生
+     *
+     */
     public void startFile(File file, int[] pitchList) {
-        getNearestValue(pitchList);
+        //最も近いピッチ探させる
+        int playNumber = getNearestValue(pitchList, getSilentStartPitch());
+        System.out.println("PITCH:" + String.format("%.2f", getSilentStartPitch()) + "Hz PLAY:" + playNumber +" min:" +pitchList[playNumber] );
+        //File[] filesInput = file.listFiles();
 
+        //音再生
+        try {
+            AudioInputStream stream = AudioSystem.getAudioInputStream(getClass().getResource(String.valueOf(file))); //オーディオストリームを開く
+            AudioFormat af = stream.getFormat(); //ファイルの形式取得
+            DataLine.Info dataLine = new DataLine.Info(Clip.class,af); //単一のオーディオ形式を含む指定した情報からデータラインの情報オブジェクトを構築
+            Clip c = (Clip)AudioSystem.getLine(dataLine); //指定された Line.Info オブジェクトの記述に一致するラインを取得
+            c.open(stream); //再生準備完了
+            c.start();// 再生
+            c.close();
+
+        } catch (LineUnavailableException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (UnsupportedAudioFileException e) {
+            e.printStackTrace();
+        }
 
 
     }

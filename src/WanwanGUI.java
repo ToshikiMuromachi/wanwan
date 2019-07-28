@@ -19,8 +19,8 @@ public class WanwanGUI {
     JFrame mainwindow;
     BufferStrategy strategy;
     ;
-    BufferedImage bimage;
     BufferedImage monimage;
+    BufferedImage mon2image;
 
     private boolean utterance;
     double utteranceTime = 0;
@@ -45,8 +45,8 @@ public class WanwanGUI {
         this.strategy = this.mainwindow.getBufferStrategy();
         //読み込み
         try {
-            this.monimage = ImageIO.read(new File("/home/toshiki/IdeaProjects/wanwan/data/dog.png"));
-            this.bimage = ImageIO.read(new File("/home/toshiki/IdeaProjects/wanwan/data/monmon.png"));
+            this.monimage = ImageIO.read(new File("/home/toshiki/IdeaProjects/wanwan/data/monmon.png"));
+            this.mon2image = ImageIO.read(new File("/home/toshiki/IdeaProjects/wanwan/data/monmon2.png"));
 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this.mainwindow,"No image.");
@@ -73,8 +73,9 @@ public class WanwanGUI {
         }
 
         //フラグ処理
-        if (utteranceTime >= 20 ) {
+        if (utteranceTime >= 50 ) {
             setUtterance(false);
+            utteranceTime = 0;
         }
     }
 
@@ -93,18 +94,19 @@ public class WanwanGUI {
      */
     public void render(){
         Graphics2D g = (Graphics2D)this.strategy.getDrawGraphics();
-        g.setBackground(Color.DARK_GRAY);
-        g.clearRect(0, 0, this.mainwindow.getWidth(), this.mainwindow.getHeight());
+        //g.setBackground(Color.DARK_GRAY);
+        //g.clearRect(0, 0, this.mainwindow.getWidth(), this.mainwindow.getHeight());
+        g.setColor(new Color(142,194,152));
+        g.fillRect(0, 0, 1024,768);
 
         //くまモン描画
         //発話
         monMove();
-        g.drawImage(this.bimage, 200, (int) (100 + y), null);
         if (getUtterance() == true ) {
-            g.drawImage(this.monimage, 500, (int) (100 + y), null);
+            g.drawImage(this.mon2image, 100, (int) (100 + y), null);
             utteranceTime++;
         } else {
-            g.drawImage(this.bimage, 100, (int) (100 + y), null);
+            g.drawImage(this.monimage, 100, (int) (100 + y), null);
         }
         g.dispose();
         this.strategy.show();

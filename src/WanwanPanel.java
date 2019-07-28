@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
-public class wanwanPanel extends JPanel {
+public class WanwanPanel extends JPanel {
 
     /**
      *
@@ -32,7 +32,7 @@ public class wanwanPanel extends JPanel {
     private int recentResetRepeat = 0;
     private int currentResetRepeat = 0;
 
-    public wanwanPanel(){
+    public WanwanPanel(){
         for(double timeInQuarterNotes : timing){
             patternLengthInQuarterNotes+=timeInQuarterNotes;
         }
@@ -48,8 +48,7 @@ public class wanwanPanel extends JPanel {
     public void paint(final Graphics g) {
         final Graphics2D graphics = (Graphics2D) g;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-                RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         graphics.setBackground(new Color(105,105,105));
         graphics.clearRect(0, 0, getWidth(), getHeight());
         int x = (int) (currentMarker / (float) patternLength * getWidth());
@@ -117,6 +116,8 @@ public class wanwanPanel extends JPanel {
             g.drawLine(0, 100 + i*70, 1980, 100 + i*70);
         }
 
+        //GUI描画更新
+
     }
 
 //    private void score(){
@@ -152,7 +153,6 @@ public class wanwanPanel extends JPanel {
             pitches.add(pitchInCents);
             startTimeStamps.add(timeStamp);
         }
-
 
         this.repaint();
     }

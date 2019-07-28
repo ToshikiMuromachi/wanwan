@@ -1,19 +1,14 @@
 import be.tarsos.dsp.*;
-import be.tarsos.dsp.io.TarsosDSPAudioFormat;
-import be.tarsos.dsp.io.jvm.AudioDispatcherFactory;
 import be.tarsos.dsp.io.jvm.AudioPlayer;
 import be.tarsos.dsp.io.jvm.JVMAudioInputStream;
-import be.tarsos.dsp.io.jvm.WaveformWriter;
 import be.tarsos.dsp.pitch.PitchDetectionHandler;
 import be.tarsos.dsp.pitch.PitchDetectionResult;
 import be.tarsos.dsp.pitch.PitchProcessor;
 import be.tarsos.dsp.pitch.PitchProcessor.PitchEstimationAlgorithm;
 import be.tarsos.dsp.resample.RateTransposer;
-import be.tarsos.dsp.writer.WriterProcessor;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
-import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,12 +16,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
-public class wanwan extends JFrame implements PitchDetectionHandler {
+public class Wanwan extends JFrame implements PitchDetectionHandler {
 
-    private final wanwanPanel panel;
+    private final WanwanPanel panel;
     private AudioDispatcher dispatcher;
     private Mixer currentMixer;
     private PitchEstimationAlgorithm algo;
@@ -51,6 +45,9 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
     File wanfile = new File("/home/toshiki/IdeaProjects/wanwan/data/dog.wav");
     File wanfiles = new File("/home/toshiki/IdeaProjects/wanwan/data/");
 
+    //GUI
+    private  GUI frameWanwan;
+
     private ActionListener algoChangeListener = new ActionListener(){
         @Override
         public void actionPerformed(final ActionEvent e) {
@@ -66,13 +63,13 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
             }
         }};
 
-    public wanwan(){
+    public Wanwan(){
         this.setLayout(new BorderLayout());
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Pitch Detector");
-        this.setBounds(400, 100, 1920, 1080);
+        this.setBounds(600, 100, 1920, 1080);
 
-        panel = new wanwanPanel();
+        panel = new WanwanPanel();
 
 
         algo = PitchEstimationAlgorithm.YIN;
@@ -122,6 +119,10 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
                 break;
             }
         }
+
+        //GUI
+        frameWanwan = new GUI();
+
     }
 
 
@@ -170,19 +171,22 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
             public void run() {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    JFrame frame = new wanwan();
+                    JFrame frame = new Wanwan();
                     //frame.pack();
                     frame.setSize(1980,1020);
                     frame.setVisible(true);
 
-                    JFrame frameWanwan = new gui();
+                    JFrame frameWanwan = new GUI();
                     frameWanwan.setSize(640,480);
                     frameWanwan.setVisible(true);
 
-                    wanwan sound = new wanwan();
+                    WanwanGUI wanGUI = new WanwanGUI();
+                    wanGUI.start();
+
+                    //Wanwan sound = new Wanwan();
                     //Clip clip = null;
 //                    createClip("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav","/home/toshiki/data/a/a.wav",0);
-                    //ここで再生メソッドの呼び出し
+                    //ここで再生メソッドの呼び出しthis.
                     //clip.start();
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
@@ -211,6 +215,10 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         //System.out.print(message);        //ピッチ取得結果
         //System.out.println(timeStamp+" : "+ pitchesAll.get(timeStamp));     //全ピッチをマップに格納(使ってない)
         panel.setMarker(timeStamp, pitch);
+
+        //GUI更新
+        frameWanwan.updateGUI();
+
 
 
         //ピッチ
@@ -333,8 +341,6 @@ public class wanwan extends JFrame implements PitchDetectionHandler {
         //音再生
         Clip clip = createClip(fileInput);
         clip.start();
-
-
 
     }
 

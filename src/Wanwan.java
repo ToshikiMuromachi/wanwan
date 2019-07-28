@@ -45,8 +45,7 @@ public class Wanwan extends JFrame implements PitchDetectionHandler {
     File wanfile = new File("/home/toshiki/IdeaProjects/wanwan/data/dog.wav");
     File wanfiles = new File("/home/toshiki/IdeaProjects/wanwan/data/");
 
-    //GUI
-    private  GUI frameWanwan;
+    WanwanGUI wanGUI;
 
     private ActionListener algoChangeListener = new ActionListener(){
         @Override
@@ -120,8 +119,8 @@ public class Wanwan extends JFrame implements PitchDetectionHandler {
             }
         }
 
-        //GUI
-        frameWanwan = new GUI();
+        wanGUI = new WanwanGUI();
+        wanGUI.start();
 
     }
 
@@ -150,8 +149,7 @@ public class Wanwan extends JFrame implements PitchDetectionHandler {
 
         JVMAudioInputStream audioStream = new JVMAudioInputStream(stream);
         // create a new dispatcher
-        dispatcher = new AudioDispatcher(audioStream, bufferSize,
-                overlap);
+        dispatcher = new AudioDispatcher(audioStream, bufferSize, overlap);
 
         // add a processor, handle percussion event.
         dispatcher.addAudioProcessor(new PitchProcessor(algo, sampleRate, bufferSize, this));
@@ -161,7 +159,7 @@ public class Wanwan extends JFrame implements PitchDetectionHandler {
     }
 
     /**
-     *
+     *メインクラス
      */
     private static final long serialVersionUID = 4787721035066991486L;
 
@@ -176,18 +174,7 @@ public class Wanwan extends JFrame implements PitchDetectionHandler {
                     frame.setSize(1980,1020);
                     frame.setVisible(true);
 
-//                    JFrame frameWanwan = new GUI();
-//                    frameWanwan.setSize(640,480);
-//                    frameWanwan.setVisible(true);
 
-                    WanwanGUI wanGUI = new WanwanGUI();
-                    wanGUI.start();
-
-                    //Wanwan sound = new Wanwan();
-                    //Clip clip = null;
-//                    createClip("/home/toshiki/IdeaProjects/TarsosDSPTest/monmon_2.wav","/home/toshiki/data/a/a.wav",0);
-                    //ここで再生メソッドの呼び出しthis.
-                    //clip.start();
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 } catch (InstantiationException e) {
@@ -216,9 +203,6 @@ public class Wanwan extends JFrame implements PitchDetectionHandler {
         //System.out.println(timeStamp+" : "+ pitchesAll.get(timeStamp));     //全ピッチをマップに格納(使ってない)
         panel.setMarker(timeStamp, pitch);
 
-        //GUI更新
-        frameWanwan.updateGUI();
-
 
 
         //ピッチ
@@ -242,6 +226,9 @@ public class Wanwan extends JFrame implements PitchDetectionHandler {
             setSilentRecentTimeStamp(timeStamp);
             //無音区間開始時のピッチを記録
             setSilentStartPitch(panel.getSilentRecentTimePitch());
+
+            //発話時画像に変更
+            wanGUI.setUtterance(true);
             //発話生成 音声ファイル再生
             startFile(wanfiles, pitchList);
             panel.setSilentSection(1); //無音区間フラグを立てる

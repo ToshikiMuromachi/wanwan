@@ -18,16 +18,22 @@ import javax.swing.JOptionPane;
 public class WanwanGUI {
     JFrame mainwindow;
     BufferStrategy strategy;
-    boolean spkey = false;
-    double cy = 200;
+    ;
     BufferedImage bimage;
+    BufferedImage monimage;
 
+    private boolean utterance;
+    double utteranceTime = 0;
+
+    double x = 0;
+    double y = 0;
+    boolean yFlag;
 
     //コンストラクタ
     public WanwanGUI(){
         this.mainwindow = new JFrame("wanwan");
         this.mainwindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.mainwindow.setBounds(0,200,640,480);
+        this.mainwindow.setBounds(0,200,1024,768);
         //this.mainwindow.setLocationRelativeTo(null);
         this.mainwindow.setVisible(true);
         this.mainwindow.setResizable(false);
@@ -39,16 +45,45 @@ public class WanwanGUI {
         this.strategy = this.mainwindow.getBufferStrategy();
         //読み込み
         try {
-            this.bimage = ImageIO.read(new File("/home/toshiki/IdeaProjects/wanwan/data/dog.png"));
+            this.monimage = ImageIO.read(new File("/home/toshiki/IdeaProjects/wanwan/data/dog.png"));
+            this.bimage = ImageIO.read(new File("/home/toshiki/IdeaProjects/wanwan/data/monmon.png"));
+
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this.mainwindow,"No image.");
         }
     }
 
     /**
+     * くまもん上下
+     */
+    public void monMove() {
+        x= x + 5;
+        //上下
+        if (yFlag == false) {
+            y = y + 0.2;
+        } else {
+            y = y - 0.2;
+        }
+
+        if (y > 10) {
+            yFlag = true;
+        }
+        if (y < -10) {
+            yFlag = false;
+        }
+
+        //フラグ処理
+        if (utteranceTime >= 20 ) {
+            setUtterance(false);
+        }
+    }
+
+
+
+    /**
      * 定期的描画開始
      */
-    void start(){
+    public void start(){
         Timer t = new Timer();
         t.schedule(new RenderTask(), 0, 16);
     }
@@ -56,20 +91,21 @@ public class WanwanGUI {
     /**
      * 描画
      */
-    void render(){
+    public void render(){
         Graphics2D g = (Graphics2D)this.strategy.getDrawGraphics();
-        g.setBackground(Color.black);
+        g.setBackground(Color.DARK_GRAY);
         g.clearRect(0, 0, this.mainwindow.getWidth(), this.mainwindow.getHeight());
 
-        if(spkey == true){
-            cy -= 1;
+        //くまモン描画
+        //発話
+        monMove();
+        g.drawImage(this.bimage, 200, (int) (100 + y), null);
+        if (getUtterance() == true ) {
+            g.drawImage(this.monimage, 500, (int) (100 + y), null);
+            utteranceTime++;
         } else {
-            cy += 1;
+            g.drawImage(this.bimage, 100, (int) (100 + y), null);
         }
-
-        g.drawImage(this.bimage, 126, 50, null);
-        g.setColor(Color.RED);
-        g.fill(new Rectangle2D.Double(400,400,100,100));
         g.dispose();
         this.strategy.show();
     }
@@ -95,5 +131,8 @@ public class WanwanGUI {
         WanwanGUI wanGUI = new WanwanGUI();
         wanGUI.start();
     }
+
+    public boolean getUtterance() { return this.utterance; }
+    public void setUtterance(boolean utterance) { this.utterance = utterance;}
 
 }

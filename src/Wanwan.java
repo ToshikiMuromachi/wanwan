@@ -176,9 +176,9 @@ public class Wanwan extends JFrame implements PitchDetectionHandler {
                     frame.setSize(1980,1020);
                     frame.setVisible(true);
 
-                    JFrame frameWanwan = new GUI();
-                    frameWanwan.setSize(640,480);
-                    frameWanwan.setVisible(true);
+//                    JFrame frameWanwan = new GUI();
+//                    frameWanwan.setSize(640,480);
+//                    frameWanwan.setVisible(true);
 
                     WanwanGUI wanGUI = new WanwanGUI();
                     wanGUI.start();

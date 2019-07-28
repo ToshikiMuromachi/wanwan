@@ -27,10 +27,12 @@ public class WanwanGUI {
     public WanwanGUI(){
         this.mainwindow = new JFrame("wanwan");
         this.mainwindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.mainwindow.setSize(800, 720);
-        this.mainwindow.setLocationRelativeTo(null);
+        this.mainwindow.setBounds(0,200,640,480);
+        //this.mainwindow.setLocationRelativeTo(null);
         this.mainwindow.setVisible(true);
         this.mainwindow.setResizable(false);
+        this.mainwindow.setBackground(Color.DARK_GRAY);
+        this.mainwindow.setAlwaysOnTop(true);
         //バッファストラテジー
         this.mainwindow.setIgnoreRepaint(true);
         this.mainwindow.createBufferStrategy(2);
@@ -43,11 +45,17 @@ public class WanwanGUI {
         }
     }
 
+    /**
+     * 定期的描画開始
+     */
     void start(){
         Timer t = new Timer();
         t.schedule(new RenderTask(), 0, 16);
     }
 
+    /**
+     * 描画
+     */
     void render(){
         Graphics2D g = (Graphics2D)this.strategy.getDrawGraphics();
         g.setBackground(Color.black);
@@ -59,15 +67,16 @@ public class WanwanGUI {
             cy += 1;
         }
 
-        g.setColor(Color.YELLOW);
-        g.draw(new Ellipse2D.Double(100, this.cy, 100, 100));
-        g.drawImage(this.bimage, (int)126, (int)this.cy+24, null);
+        g.drawImage(this.bimage, 126, 50, null);
         g.setColor(Color.RED);
         g.fill(new Rectangle2D.Double(400,400,100,100));
         g.dispose();
         this.strategy.show();
     }
 
+    /**
+     * タスク実行
+     */
     class RenderTask extends TimerTask {
         int count = 0;
 
@@ -78,24 +87,10 @@ public class WanwanGUI {
 
     }
 
-    class MyKeyAdapter extends KeyAdapter {
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            if(e.getKeyCode() == KeyEvent.VK_SPACE){
-                WanwanGUI.this.spkey = true;
-            }
-        }
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            if(e.getKeyCode() == KeyEvent.VK_SPACE){
-                WanwanGUI.this.spkey = false;
-            }
-        }
-
-    }
-
+    /**
+     * テスト用
+     * @param args
+     */
     public static void main(String[] args) {
         WanwanGUI wanGUI = new WanwanGUI();
         wanGUI.start();
